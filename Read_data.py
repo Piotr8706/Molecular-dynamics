@@ -3,6 +3,17 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 def read_and_transform(f):
+    """This project deals with three different type of file structure. The purpose of 
+    this function is to read files with H-bonds and ionic interations which have following structure:
+    40000000.000
+    1.000 852.000 14.775 0 4.000 2.180
+    8.000 55.000 25.000 1 56.000 1.996
+    12.000 898.000 22.275 0 13.000 1.624
+    19.000 73.000 25.000 1 74.000 1.804
+    34.000 97.000 17.775 1 98.000 1.850
+    50.000 117.000 16.600 1 118.000 2.268
+    It starts with timestamp followed by list of all interactions of given type.
+    Function puts time stamp in first column"""
     with open(f, "r") as file:
         lines = file.readlines()
 
@@ -19,7 +30,7 @@ def read_and_transform(f):
         if len(values) == 1:
             single_value = float(values[0])
         else:
-            # Add the single value to the beginning of the row and remove the last two values
+            # Add the single value to the beginning of the row
             modified_row = [single_value] + list(map(float, values[:]))
             modified_data.append(modified_row)
 
@@ -27,8 +38,8 @@ def read_and_transform(f):
     return pd.DataFrame(modified_data)
 
 
-def read_binden_and_analysis(typ,parameter):
-    # Specify the file path
+def read_file_show_interaction(typ,parameter):
+    """Reading all data from all files for a given ion that is added to the system"""
     Ca = []
     Na = []
     Mg = []
@@ -38,31 +49,40 @@ def read_binden_and_analysis(typ,parameter):
             path = path + r"\Binding_energy"
         case 'Structural':
             path = path + r"\Structural"
-        case 'H-Bond':
-            path = r"C:\Users\piotr\Downloads\Results\Results\Na_HBO_1.txt"
-    ends_with = r".txt"
-
-    for i in range(1,12):
-        f1 = path + r"\Ca_" + str(i) + (ends_with if typ == 'Bind' else r"_str" + ends_with)
-        f2 = path + r"\Mg_" + str(i) + (ends_with if typ == 'Bind' else r"_str" + ends_with)
-        f3 = path + r"\Na_" + str(i) + (ends_with if typ == 'Bind' else r"_str" + ends_with)
+        case 'HBond':
+            path = path + r"\HBond"
+        case 'Ionic':
+            path = path + r"\Ionic"
+   
+    for i in range(1,13):
+        f1 = path + r"\Ca_" + str(i) + r".txt"
+        f2 = path + r"\Mg_" + str(i) + r".txt"
+        f3 = path + r"\Na_" + str(i) + r".txt"
+        if typ == 'Bind' or typ == 'Structural':
         # Read the data, considering the structure provided
-        data1 = pd.read_table(f1, delim_whitespace=True)
-        data2 = pd.read_table(f2, delim_whitespace=True)
-        data3 = pd.read_table(f3, delim_whitespace=True)   
-        # Select only specific columns
-        Ca.append(data1[parameter][500:].mean())
-        Mg.append(data2[parameter][500:].mean())
-        Na.append(data3[parameter][500:].mean())
+            data1 = pd.read_table(f1, delim_whitespace=True)
+            data2 = pd.read_table(f2, delim_whitespace=True)
+            data3 = pd.read_table(f3, delim_whitespace=True)
+            Ca.append(data1[parameter][400:].mean())
+            Mg.append(data2[parameter][400:].mean())
+            Na.append(data3[parameter][400:].mean())
+        else:
+            data1 = count_rows_with_conditions(read_and_transform(f1))
+            data2 = count_rows_with_conditions(read_and_transform(f2))
+            data3 = count_rows_with_conditions(read_and_transform(f3))
+            Ca.append(sum(data1.values()) / len(data1))
+            Mg.append(sum(data2.values()) / len(data2))
+            Na.append(sum(data3.values()) / len(data3))        
     return Ca, Mg, Na
 
 
 def count_rows_with_conditions(df):
+    """Counts number of interactions in time stamp. However we are only interested in 
+    intermolecular interactions so that certain conditions must be applied"""
     count = {}
-    
     for i in range(1, len(df)):
         # Check if the current row shares the same value in the first column as the previous row
-        if df.at[i, 0] == df.at[i-1, 0] and df.at[i, 1] > 9133 and df.at[i, 2] <= 9133:
+        if df.at[i, 0] == df.at[i-1, 0] and df.at[i, 1] < 9133 and df.at[i, 2] >= 9133 and df.at[i, 1] < 10240 and df.at[i, 2] < 10240:
             key = df.at[i, 0]
             count[key] = count.get(key, 0) + 1
             
@@ -70,42 +90,22 @@ def count_rows_with_conditions(df):
 
 
 def main():
-    f = r"C:\Users\piotr\Downloads\IJMS_HA+Albumin\Hbond\Na_HBO_2.txt"
-    ga = read_and_transform(f)
-    print(ga.shape)
-    hbo = count_rows_with_conditions(ga)
-    print(hbo)
-    Ca, Mg, Na = read_binden_and_analysis('Bind','Energy')
-    Ca1, Mg1, Na1 = read_binden_and_analysis('Structural','Rg_HA')
+
+    Ca1, Mg1, Na1 = read_file_show_interaction('HBond','')
 
     # Display the selected data
     fig = plt.figure()
-    X=np.arange(0,11)
-    ax = fig.add_axes([0,0,1,1])
-    ax.bar(X + 0.00, Ca1, color = 'b', width = 0.25)
-    ax.bar(X + 0.25, Mg1, color = 'g', width = 0.25)
-    ax.bar(X + 0.50, Na1, color = 'r', width = 0.25)
-
-    
-    #print(graph)
-    #colors = ['blue', 'orange', 'green']
-    # plot histogram 
-    #plt.hist([Ca, Mg, Na], bins=10, label=['Ca','Mg','Na'], alpha=0.5)
-    #plt.hist(Mg, bins=50, label='Mg', alpha=0.5)
-    #plt.hist(Na, bins=50, label='Na', alpha=0.5)
-    #plt.legend(loc='upper right')
-    #plt.hist(selected_data_4, bins=20, label='Ca', alpha=0.5)
-    #plt.show()
-
-    #f3 = plt.figure(3)
-    #x = Na1
-    #y = Na
-    #plt.plot(x, y, 'bo')
-    plt.show()
-    #input()
-    #correlation_coefficient = np.corrcoef(x, y)[0, 1]
-
-    #print("Correlation coefficient:", correlation_coefficient)
+    X = np.arange(0, 12)
+    ax = fig.add_axes([0.1, 0.1, 0.8, 0.8])
+    ax.bar(X + 0.00, Ca1, color='b', width=0.25, label='Ca')
+    ax.bar(X + 0.25, Mg1, color='g', width=0.25, label='Mg')
+    ax.bar(X + 0.50, Na1, color='r', width=0.25, label='Na')
+    ax.set_title("Hydrogen Bonds")
+    ax.set_xlabel("Site")  # Added x-axis label
+    ax.set_ylabel("# of H-bonds")
+    plt.legend(loc='upper right')
+    plt.savefig('./Files/HBonds_vs_site.png')
+    plt.show()  
 
 
 if __name__=="__main__":
