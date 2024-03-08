@@ -92,10 +92,12 @@ def count_rows_with_conditions(df):
 def main():
 
     Ca1, Mg1, Na1 = read_file_show_interaction('HBond','')
+    Ca2, Mg2, Na2 = read_file_show_interaction('Bind','Energy')
+
 
     # Display the selected data
     fig = plt.figure()
-    X = np.arange(0, 12)
+    """    X = np.arange(0, 12)
     ax = fig.add_axes([0.1, 0.1, 0.8, 0.8])
     ax.bar(X + 0.00, Ca1, color='b', width=0.25, label='Ca')
     ax.bar(X + 0.25, Mg1, color='g', width=0.25, label='Mg')
@@ -104,7 +106,40 @@ def main():
     ax.set_xlabel("Site")  # Added x-axis label
     ax.set_ylabel("# of H-bonds")
     plt.legend(loc='upper right')
-    plt.savefig('./Files/HBonds_vs_site.png')
+    plt.savefig('./Files/HBonds_vs_site.png')"""
+    ax = fig.add_axes([0.1, 0.1, 0.8, 0.8])
+    ax.set_title("Hydrogen Bonds")
+    ax.set_xlabel("# of H-bonds")  # Added x-axis label
+    ax.set_ylabel("Energy [kJ/mol]")
+
+    Ca1 = np.array(Ca1)
+    Mg1 = np.array(Mg1)
+    Na1 = np.array(Na1)
+    Ca2 = np.array(Ca2)
+    Mg2 = np.array(Mg2)
+    Na2 = np.array(Na2)
+    x = np.concatenate([Ca1, Mg1, Na1])
+    y = np.concatenate([Ca2, Mg2, Na2])
+    #find line of best fit
+    a, b = np.polyfit(x, y, 1)
+    correlation_coefficient = np.corrcoef(x, y)[0, 1]
+    #add points to plot
+    ax.scatter(x, y, color='purple')
+
+    #add line of best fit to plot
+    ax.plot(x, a*x+b, color='steelblue', linestyle='--', linewidth=2)
+
+# add fitted regression equation to plot
+    ax.text(0.05, 0.95, 'y = {:.2f} + {:.2f}x'.format(b, a),
+            transform=ax.transAxes, size=14,
+            verticalalignment='top')
+
+    # add correlation coefficient to plot
+    ax.text(0.05, 0.90, 'Correlation Coefficient: {:.2f}'.format(correlation_coefficient),
+            transform=ax.transAxes, size=14,
+            verticalalignment='top')
+
+    plt.savefig('./Files/HBonds_vs_BindEnergy.png')
     plt.show()  
 
 
