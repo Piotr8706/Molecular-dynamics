@@ -2,6 +2,20 @@ import pandas as pd
 import numpy as np
 from matplotlib import pyplot as plt
 
+# TODO: rename module Read_data.py to read_data.py - do not use Upper letters
+# TODO: Add some typing and
+# TODO: in next two month you don't forget about what 'f' is.
+# TODO: improve 'f' variable name
+# TODO: good practice is add Arguments: and Returns: in docstring
+# TODO: add below lines to docstring
+"""
+    Arguments:
+        f {string} -- file
+    Returns:
+        [type] -- [description]
+"""
+
+
 def read_and_transform(f):
     """This project deals with three different type of file structure. The purpose of 
     this function is to read files with H-bonds and ionic interations which have following structure:
@@ -13,7 +27,9 @@ def read_and_transform(f):
     34.000 97.000 17.775 1 98.000 1.850
     50.000 117.000 16.600 1 118.000 2.268
     It starts with timestamp followed by list of all interactions of given type.
-    Function puts time stamp in first column"""
+    Function puts time stamp in first column
+    """
+    # TODO: Read about pd.read_csv(), pd.read_table() and load file direct to pd.DataFrame()
     with open(f, "r") as file:
         lines = file.readlines()
 
@@ -22,23 +38,30 @@ def read_and_transform(f):
     single_value = None
 
     # Iterate through the lines
+    # TODO: make less iterations each elements use operations of DataFrames to change datasets
     for line in lines:
         # Split the line by whitespaces
         values = line.strip().split()
 
         # If the line contains a single value
         if len(values) == 1:
+            # TODO: this value should not be return in DataFrame
+            # TODO: or single_value could be a index and data could be a pd.Series inside pd.DataFrame
+            # TODO: make answer for question - for what will be single_value use?
             single_value = float(values[0])
         else:
             # Add the single value to the beginning of the row
+            # TODO: make convert to float for column used pandas manipulation functions
             modified_row = [single_value] + list(map(float, values[:]))
             modified_data.append(modified_row)
 
     # Convert the modified data into a DataFrame
+    # TODO: change return
+    #   return pd.DataFrame(modified_data), single_value
     return pd.DataFrame(modified_data)
 
 
-def read_file_show_interaction(typ,parameter):
+def read_file_show_interaction(typ, parameter):
     """Reading all data from all files for a given ion that is added to the system"""
     Ca = []
     Na = []
@@ -53,13 +76,13 @@ def read_file_show_interaction(typ,parameter):
             path = path + r"\HBond"
         case 'Ionic':
             path = path + r"\Ionic"
-   
-    for i in range(1,13):
+
+    for i in range(1, 13):
         f1 = path + r"\Ca_" + str(i) + r".txt"
         f2 = path + r"\Mg_" + str(i) + r".txt"
         f3 = path + r"\Na_" + str(i) + r".txt"
         if typ == 'Bind' or typ == 'Structural':
-        # Read the data, considering the structure provided
+            # Read the data, considering the structure provided
             data1 = pd.read_table(f1, delim_whitespace=True)
             data2 = pd.read_table(f2, delim_whitespace=True)
             data3 = pd.read_table(f3, delim_whitespace=True)
@@ -67,12 +90,19 @@ def read_file_show_interaction(typ,parameter):
             Mg.append(data2[parameter][400:].mean())
             Na.append(data3[parameter][400:].mean())
         else:
+            """
+            an example for unpack function returns:
+            
+            f1_data, f1_start_number = read_and_transform(f1)
+            data1 = count_rows_with_conditions(f1_data)
+            """
             data1 = count_rows_with_conditions(read_and_transform(f1))
             data2 = count_rows_with_conditions(read_and_transform(f2))
             data3 = count_rows_with_conditions(read_and_transform(f3))
+            # TODO: data1.mean()
             Ca.append(sum(data1.values()) / len(data1))
             Mg.append(sum(data2.values()) / len(data2))
-            Na.append(sum(data3.values()) / len(data3))        
+            Na.append(sum(data3.values()) / len(data3))
     return Ca, Mg, Na
 
 
@@ -80,21 +110,22 @@ def count_rows_with_conditions(df):
     """Counts number of interactions in time stamp. However we are only interested in 
     intermolecular interactions so that certain conditions must be applied"""
     count = {}
+    # TODO: make filtered_df based on df and select methods from pandas
+    # TODO: remove for use filtered_df.count()
     for i in range(1, len(df)):
         # Check if the current row shares the same value in the first column as the previous row
-        if df.at[i, 0] == df.at[i-1, 0] and df.at[i, 1] < 9133 and df.at[i, 2] >= 9133 and df.at[i, 1] < 10240 and df.at[i, 2] < 10240:
+        if df.at[i, 0] == df.at[i - 1, 0] and df.at[i, 1] < 9133 and df.at[i, 2] >= 9133 and df.at[i, 1] < 10240 and \
+                df.at[i, 2] < 10240:
             key = df.at[i, 0]
             count[key] = count.get(key, 0) + 1
-            
+
     return count
 
 
 def main():
+    Ca1, Mg1, Na1 = read_file_show_interaction('HBond', '')
 
-    Ca1, Mg1, Na1 = read_file_show_interaction('HBond','')
-    Ca2, Mg2, Na2 = read_file_show_interaction('Bind','Energy')
-
-
+    # TODO: make function from code below
     # Display the selected data
     fig = plt.figure()
     """    X = np.arange(0, 12)
@@ -106,42 +137,9 @@ def main():
     ax.set_xlabel("Site")  # Added x-axis label
     ax.set_ylabel("# of H-bonds")
     plt.legend(loc='upper right')
-    plt.savefig('./Files/HBonds_vs_site.png')"""
-    ax = fig.add_axes([0.1, 0.1, 0.8, 0.8])
-    ax.set_title("Hydrogen Bonds")
-    ax.set_xlabel("# of H-bonds")  # Added x-axis label
-    ax.set_ylabel("Energy [kJ/mol]")
-
-    Ca1 = np.array(Ca1)
-    Mg1 = np.array(Mg1)
-    Na1 = np.array(Na1)
-    Ca2 = np.array(Ca2)
-    Mg2 = np.array(Mg2)
-    Na2 = np.array(Na2)
-    x = np.concatenate([Ca1, Mg1, Na1])
-    y = np.concatenate([Ca2, Mg2, Na2])
-    #find line of best fit
-    a, b = np.polyfit(x, y, 1)
-    correlation_coefficient = np.corrcoef(x, y)[0, 1]
-    #add points to plot
-    ax.scatter(x, y, color='purple')
-
-    #add line of best fit to plot
-    ax.plot(x, a*x+b, color='steelblue', linestyle='--', linewidth=2)
-
-# add fitted regression equation to plot
-    ax.text(0.05, 0.95, 'y = {:.2f} + {:.2f}x'.format(b, a),
-            transform=ax.transAxes, size=14,
-            verticalalignment='top')
-
-    # add correlation coefficient to plot
-    ax.text(0.05, 0.90, 'Correlation Coefficient: {:.2f}'.format(correlation_coefficient),
-            transform=ax.transAxes, size=14,
-            verticalalignment='top')
-
-    plt.savefig('./Files/HBonds_vs_BindEnergy.png')
-    plt.show()  
+    plt.savefig('./Files/HBonds_vs_site.png')
+    plt.show()
 
 
-if __name__=="__main__":
+if __name__ == "__main__":
     main()
