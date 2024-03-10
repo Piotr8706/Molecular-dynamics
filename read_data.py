@@ -2,10 +2,10 @@ import pandas as pd
 import numpy as np
 from matplotlib import pyplot as plt
 
-# TODO: rename module Read_data.py to read_data.py - do not use Upper letters
-# TODO: Add some typing and
-# TODO: in next two month you don't forget about what 'f' is.
-# TODO: improve 'f' variable name
+# TODO: rename module Read_data.py to read_data.py - do not use Upper letters - done
+# TODO: Add some typing and 
+# TODO: in next two month you don't forget about what 'f' is.- done
+# TODO: improve 'f' variable name - done
 # TODO: good practice is add Arguments: and Returns: in docstring
 # TODO: add below lines to docstring
 """
@@ -16,21 +16,33 @@ from matplotlib import pyplot as plt
 """
 
 
-def read_and_transform(f):
+def read_and_transform(file):
     """This project deals with three different type of file structure. The purpose of 
     this function is to read files with H-bonds and ionic interations which have following structure:
     40000000.000
     1.000 852.000 14.775 0 4.000 2.180
     8.000 55.000 25.000 1 56.000 1.996
-    12.000 898.000 22.275 0 13.000 1.624
-    19.000 73.000 25.000 1 74.000 1.804
-    34.000 97.000 17.775 1 98.000 1.850
-    50.000 117.000 16.600 1 118.000 2.268
+    40100000.000
+    8.000 55.000 25.000 1 56.000 2.100
+    12.000 45.000 9.975 1 46.000 2.359
+    12.000 898.000 20.725 0 13.000 1.981
+    40200000.000
+    8.000 55.000 23.450 1 56.000 1.997
+    12.000 45.000 20.400 1 46.000 2.182
+    etc
+    should be converted into:
+    40000000.000 1.000 852.000 14.775 0 4.000 2.180
+    40000000.000 8.000 55.000 25.000 1 56.000 1.996
+    40100000.000 8.000 55.000 25.000 1 56.000 2.100
+    40100000.000 12.000 45.000 9.975 1 46.000 2.359
+    40100000.000 12.000 898.000 20.725 0 13.000 1.981
+    40200000.000 8.000 55.000 23.450 1 56.000 1.997
+    40200000.000 12.000 45.000 20.400 1 46.000 2.182
     It starts with timestamp followed by list of all interactions of given type.
     Function puts time stamp in first column
     """
     # TODO: Read about pd.read_csv(), pd.read_table() and load file direct to pd.DataFrame()
-    with open(f, "r") as file:
+    with open(file, "r") as file:
         lines = file.readlines()
 
     # Initialize empty lists to store modified data
@@ -121,14 +133,10 @@ def count_rows_with_conditions(df):
 
     return count
 
-
-def main():
+def create_figure_and_save(*args):
     Ca1, Mg1, Na1 = read_file_show_interaction('HBond', '')
-
-    # TODO: make function from code below
-    # Display the selected data
     fig = plt.figure()
-    """    X = np.arange(0, 12)
+    X = np.arange(0, 12)
     ax = fig.add_axes([0.1, 0.1, 0.8, 0.8])
     ax.bar(X + 0.00, Ca1, color='b', width=0.25, label='Ca')
     ax.bar(X + 0.25, Mg1, color='g', width=0.25, label='Mg')
@@ -140,6 +148,14 @@ def main():
     plt.savefig('./Files/HBonds_vs_site.png')
     plt.show()
 
+    
+def main():
+    f1 = r"C:\Users\piotr\Downloads\IJMS_HA+Albumin\Hbond\Ca_1.txt"
+    data = read_and_transform(f1)
+    print(data.describe())
+
+    # TODO: make function from code below
+    # Display the selected data
 
 if __name__ == "__main__":
     main()
