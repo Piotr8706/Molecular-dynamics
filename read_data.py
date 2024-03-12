@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 from matplotlib import pyplot as plt
+import time
 
 # TODO: rename module Read_data.py to read_data.py - do not use Upper letters - done
 # TODO: Add some typing and 
@@ -8,13 +9,6 @@ from matplotlib import pyplot as plt
 # TODO: improve 'f' variable name - done
 # TODO: good practice is add Arguments: and Returns: in docstring
 # TODO: add below lines to docstring
-"""
-    Arguments:
-        f {string} -- file
-    Returns:
-        [type] -- [description]
-"""
-
 
 def read_and_transform(file):
     """This project deals with three different type of file structure. The purpose of 
@@ -47,7 +41,6 @@ def read_and_transform(file):
 
     # Initialize empty lists to store modified data
     modified_data = []
-    single_value = None
 
     # Iterate through the lines
     # TODO: make less iterations each elements use operations of DataFrames to change datasets
@@ -60,17 +53,19 @@ def read_and_transform(file):
             # TODO: this value should not be return in DataFrame
             # TODO: or single_value could be a index and data could be a pd.Series inside pd.DataFrame
             # TODO: make answer for question - for what will be single_value use?
-            single_value = float(values[0])
+            timestamp = float(values[0])
         else:
             # Add the single value to the beginning of the row
             # TODO: make convert to float for column used pandas manipulation functions
-            modified_row = [single_value] + list(map(float, values[:]))
+            modified_row = [timestamp] + list(map(float, values[:]))
             modified_data.append(modified_row)
 
     # Convert the modified data into a DataFrame
     # TODO: change return
     #   return pd.DataFrame(modified_data), single_value
-    return pd.DataFrame(modified_data)
+    df = pd.DataFrame(modified_data)
+    df.columns = ['Timestamp'] + [f'Col_{i}' for i in range(1, len(df.columns))]
+    return df
 
 
 def read_file_show_interaction(typ, parameter):
@@ -121,19 +116,17 @@ def read_file_show_interaction(typ, parameter):
 def count_rows_with_conditions(df):
     """Counts number of interactions in time stamp. However we are only interested in 
     intermolecular interactions so that certain conditions must be applied"""
-    count = {}
+    
     # TODO: make filtered_df based on df and select methods from pandas
     # TODO: remove for use filtered_df.count()
-    for i in range(1, len(df)):
-        # Check if the current row shares the same value in the first column as the previous row
-        if df.at[i, 0] == df.at[i - 1, 0] and df.at[i, 1] < 9133 and df.at[i, 2] >= 9133 and df.at[i, 1] < 10240 and \
-                df.at[i, 2] < 10240:
-            key = df.at[i, 0]
-            count[key] = count.get(key, 0) + 1
+    filtered_df = df[(df.iloc[:, 1] < 9133) & (df.iloc[:, 2] >= 9133) & (df.iloc[:, 1] < 10240) & (df.iloc[:, 2] < 10240)]
+    if filtered_df.empty:
+        return {}
+    count = filtered_df.groupby('Timestamp').size().to_dict()
 
     return count
 
-def create_figure_and_save(*args):
+def create_figure_and_save():
     Ca1, Mg1, Na1 = read_file_show_interaction('HBond', '')
     fig = plt.figure()
     X = np.arange(0, 12)
@@ -150,12 +143,11 @@ def create_figure_and_save(*args):
 
     
 def main():
-    f1 = r"C:\Users\piotr\Downloads\IJMS_HA+Albumin\Hbond\Ca_1.txt"
-    data = read_and_transform(f1)
-    print(data.describe())
-
     # TODO: make function from code below
     # Display the selected data
-
+    start = time.time()
+    create_figure_and_save()
+    end = time.time()
+    print(end-start)
 if __name__ == "__main__":
     main()
