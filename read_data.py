@@ -1,14 +1,7 @@
 import pandas as pd
 import numpy as np
 from matplotlib import pyplot as plt
-import time
-
-# TODO: rename module Read_data.py to read_data.py - do not use Upper letters - done
-# TODO: Add some typing and 
-# TODO: in next two month you don't forget about what 'f' is.- done
-# TODO: improve 'f' variable name - done
-# TODO: good practice is add Arguments: and Returns: in docstring
-# TODO: add below lines to docstring
+import seaborn as sns
 
 def read_and_transform(file):
     """This project deals with three different type of file structure. The purpose of 
@@ -35,24 +28,19 @@ def read_and_transform(file):
     It starts with timestamp followed by list of all interactions of given type.
     Function puts time stamp in first column
     """
-    # TODO: Read about pd.read_csv(), pd.read_table() and load file direct to pd.DataFrame()
     with open(file, "r") as file:
         lines = file.readlines()
 
     # Initialize empty lists to store modified data
     modified_data = []
 
-    # Iterate through the lines
-    # TODO: make less iterations each elements use operations of DataFrames to change datasets
     for line in lines:
         # Split the line by whitespaces
         values = line.strip().split()
 
         # If the line contains a single value
         if len(values) == 1:
-            # TODO: this value should not be return in DataFrame
-            # TODO: or single_value could be a index and data could be a pd.Series inside pd.DataFrame
-            # TODO: make answer for question - for what will be single_value use?
+
             timestamp = float(values[0])
         else:
             # Add the single value to the beginning of the row
@@ -61,8 +49,6 @@ def read_and_transform(file):
             modified_data.append(modified_row)
 
     # Convert the modified data into a DataFrame
-    # TODO: change return
-    #   return pd.DataFrame(modified_data), single_value
     df = pd.DataFrame(modified_data)
     df.columns = ['Timestamp'] + [f'Col_{i}' for i in range(1, len(df.columns))]
     return df
@@ -97,57 +83,109 @@ def read_file_show_interaction(typ, parameter):
             Mg.append(data2[parameter][400:].mean())
             Na.append(data3[parameter][400:].mean())
         else:
-            """
-            an example for unpack function returns:
-            
-            f1_data, f1_start_number = read_and_transform(f1)
-            data1 = count_rows_with_conditions(f1_data)
-            """
-            data1 = count_rows_with_conditions(read_and_transform(f1))
-            data2 = count_rows_with_conditions(read_and_transform(f2))
-            data3 = count_rows_with_conditions(read_and_transform(f3))
+            f1_data = read_and_transform(f1)
+            data1 = count_rows_with_conditions(f1_data )['Count'] 
+            f2_data = read_and_transform(f2)
+            data2 = count_rows_with_conditions(f2_data )['Count'] 
+            f3_data = read_and_transform(f3)
+            data3 = count_rows_with_conditions(f3_data )['Count'] 
             # TODO: data1.mean()
-            Ca.append(sum(data1.values()) / len(data1))
-            Mg.append(sum(data2.values()) / len(data2))
-            Na.append(sum(data3.values()) / len(data3))
-    return Ca, Mg, Na
+            Ca.append(data1.mean())
+            Mg.append(data2.mean())
+            Na.append(data3.mean())
+    return np.array(Ca), np.array(Mg), np.array(Na)
 
 
 def count_rows_with_conditions(df):
     """Counts number of interactions in time stamp. However we are only interested in 
-    intermolecular interactions so that certain conditions must be applied"""
+    intermolecular interactions so that certain conditions must be applied. HSA atoms are in range
+    1-9132, HA: 9133-10239, numbers above represent solvent atoms. Mind atom number is different from
+    residue number. HSA is composed of 582 residues."""
     
-    # TODO: make filtered_df based on df and select methods from pandas
-    # TODO: remove for use filtered_df.count()
     filtered_df = df[(df.iloc[:, 1] < 9133) & (df.iloc[:, 2] >= 9133) & (df.iloc[:, 1] < 10240) & (df.iloc[:, 2] < 10240)]
     if filtered_df.empty:
-        return {}
-    count = filtered_df.groupby('Timestamp').size().to_dict()
-
-    return count
-
-def create_figure_and_save():
-    Ca1, Mg1, Na1 = read_file_show_interaction('HBond', '')
-    fig = plt.figure()
-    X = np.arange(0, 12)
-    ax = fig.add_axes([0.1, 0.1, 0.8, 0.8])
-    ax.bar(X + 0.00, Ca1, color='b', width=0.25, label='Ca')
-    ax.bar(X + 0.25, Mg1, color='g', width=0.25, label='Mg')
-    ax.bar(X + 0.50, Na1, color='r', width=0.25, label='Na')
-    ax.set_title("Hydrogen Bonds")
-    ax.set_xlabel("Site")  # Added x-axis label
-    ax.set_ylabel("# of H-bonds")
-    plt.legend(loc='upper right')
-    plt.savefig('./Files/HBonds_vs_site.png')
-    plt.show()
-
+        return pd.DataFrame()
     
+    count_df = filtered_df.groupby('Timestamp').size().reset_index(name='Count')
+    
+    return count_df
+def create_figure_and_save(*args):
+    
+    fig = plt.figure()
+    X = np.arange(0, len(args[0]))
+    ax = fig.add_axes([0.1, 0.1, 0.8, 0.8])
+    colors = ['b','g','r']
+    labels = ['Ca','Mg','Na']
+    for i in range(len(args)-3):
+        ax.bar(X + 0.25*i, args[i], color=colors[i], width=0.25, label=labels[i])
+    ax.set_title(args[3])
+    ax.set_xlabel("Site")  # Added x-axis label
+    ax.set_ylabel(args[4])
+    plt.legend(loc='upper right')
+    path = r"./Files/" + args[5] + r"_vs_site.png"
+    plt.savefig(path)
+    #plt.show()
+
+def bind_sites():
+    bind_sites = pd.read_csv('./Files/Biding_sites_summary.csv')
+    # dividing amino acids into groups
+    new_data = pd.DataFrame(columns=["Dock_site", "Charged+", "Charged-", "Hydrophobic", "Special", "1A+1B",  "2A+2B", "3A+3B",])
+
+    # Copy columns from original data
+    new_data["Dock_site"] = bind_sites["Dock_site"]
+    new_data["Charged+"] = bind_sites["ARG"] + bind_sites["HIS"] + bind_sites["LYS"]
+    new_data["Charged-"] = bind_sites["ASP"] + bind_sites["GLU"]
+    new_data["Hydrophobic"] = bind_sites["ALA"] + bind_sites["VAL"] + bind_sites["ILE"] + bind_sites["LEU"]
+    + bind_sites["MET"] + bind_sites["PHE"] + bind_sites["TYR"]
+    new_data["Special"] = bind_sites["CYS"] + bind_sites["GLY"] + bind_sites["PRO"]
+    new_data["1A+1B"] = bind_sites["1A"] + bind_sites["1B"]
+    new_data["2A+2B"] = bind_sites["2A"] + bind_sites["2B"]
+    new_data["3A+3B"] = bind_sites["3A"] + bind_sites["3B"]
+    return new_data
+
+def create_corr_matrix(data):
+    corr = data.corr()
+    ax = sns.heatmap(
+        corr, 
+        vmin=-1, vmax=1, center=0,
+        cmap=sns.diverging_palette(20, 220, n=200),
+        square=True
+    )
+    ax.set_xticklabels(
+        ax.get_xticklabels(),
+        rotation=45,
+        horizontalalignment='right',
+        fontsize='x-small'  # Adjust font size as needed
+    );
+    plt.tight_layout()  # Adjust layout to prevent label overlapping
+    plt.savefig('./Files/Correlation_matrix.png')
+
 def main():
-    # TODO: make function from code below
-    # Display the selected data
-    start = time.time()
-    create_figure_and_save()
-    end = time.time()
-    print(end-start)
+    
+    # calculating interactions
+    Ca_Ionic, Mg_Ionic, Na_Ionic = read_file_show_interaction('Ionic', '')
+    Ca_HBond, Mg_HBond, Na_HBond = read_file_show_interaction('HBond', '')
+    Ca_Bind, Mg_Bind, Na_Bind = read_file_show_interaction('Bind', 'Energy')
+    Ca_Rg_HA, Mg_Rg_HA, Na_Rg_HA = read_file_show_interaction('Structural', 'Rg_HA')
+
+    #Creating plots
+    create_figure_and_save(Ca_Rg_HA, Mg_Rg_HA, Na_Rg_HA, "HA's Radius of gyration", "R_g [A]", "Rg")
+    create_figure_and_save(Ca_HBond, Mg_HBond, Na_HBond, "Hydrogen Bonds", "# of H-bonds", "HBond")
+    create_figure_and_save(Ca_Ionic, Mg_Ionic, Na_Ionic, "Ionic interactions", "# of interactions", "Ionic")
+    create_figure_and_save(Ca_Bind, Mg_Bind, Na_Bind, "Binding energy", "Energy [kJ/mol]", "BindEnergy")
+    
+    # Looking for correlations 
+    table = bind_sites()
+    table["Bind_Ener_Ca"] = Ca_Bind
+    table["Bind_Ener_Mg"] = Mg_Bind
+    table["Bind_Ener_Na"] = Na_Bind
+    table["HBond_Ca"] = Ca_HBond
+    table["HBond_Mg"] = Mg_HBond
+    table["HBond_Na"] = Na_HBond
+    table["Ionic_Ca"] = Ca_Ionic
+    table["Ionic_Mg"] = Mg_Ionic
+    table["Ionic_Na"] = Na_Ionic   
+    create_corr_matrix(table)
+
 if __name__ == "__main__":
     main()
