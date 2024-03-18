@@ -44,7 +44,7 @@ complex is referred to as complex number 1 in Table 1.
 
 The correlation matrix shows how different factors influence binding between different HSA domains I-III
 and types of amino acids (https://en.wikipedia.org/wiki/Amino_acid#/media/File:ProteinogenicAminoAcids.svg) facilitating interactions.
-![Correlation](Files\Correlation_matrix.png)
+![Correlation](Files/Correlation_matrix.png)
 
 ## Conclusions
 
@@ -67,7 +67,7 @@ the presence of divalent ions, such as calcium or magnesium as those can form ca
 3. Install the required dependencies using pip:
 
     ```
-    pip install pandas matplotlib numpy
+    pip install pandas matplotlib numpy sns re typing
     ```
 
 ## Usage
@@ -94,5 +94,5 @@ Contributions to this project are welcome. If you find any issues or have sugges
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License. See the (LICENSE) file for details.
 

@@ -2,9 +2,12 @@ import pandas as pd
 import numpy as np
 from matplotlib import pyplot as plt
 import seaborn as sns
+from typing import Tuple
 
-def read_and_transform(file):
-    """This project deals with three different type of file structure. The purpose of 
+
+def read_and_transform(file: str) -> pd.DataFrame:
+    """
+    This project deals with three different type of file structure. The purpose of 
     this function is to read files with H-bonds and ionic interations which have following structure:
     40000000.000
     1.000 852.000 14.775 0 4.000 2.180
@@ -54,8 +57,10 @@ def read_and_transform(file):
     return df
 
 
-def read_file_show_interaction(typ, parameter):
-    """Reading all data from all files for a given ion that is added to the system"""
+def read_file_show_interaction(typ:any, parameter: any)  -> Tuple[np.ndarray, np.ndarray]:
+    """
+    Reading all data from all files for a given ion that is added to the system
+    """
     Ca = []
     Na = []
     Mg = []
@@ -96,12 +101,13 @@ def read_file_show_interaction(typ, parameter):
     return np.array(Ca), np.array(Mg), np.array(Na)
 
 
-def count_rows_with_conditions(df):
-    """Counts number of interactions in time stamp. However we are only interested in 
+def count_rows_with_conditions(df: any) -> pd.DataFrame:
+    """
+    Counts number of interactions in time stamp. However we are only interested in 
     intermolecular interactions so that certain conditions must be applied. HSA atoms are in range
     1-9132, HA: 9133-10239, numbers above represent solvent atoms. Mind atom number is different from
-    residue number. HSA is composed of 582 residues."""
-    
+    residue number. HSA is composed of 582 residues.
+    """
     filtered_df = df[(df.iloc[:, 1] < 9133) & (df.iloc[:, 2] >= 9133) & (df.iloc[:, 1] < 10240) & (df.iloc[:, 2] < 10240)]
     if filtered_df.empty:
         return pd.DataFrame()
@@ -109,24 +115,32 @@ def count_rows_with_conditions(df):
     count_df = filtered_df.groupby('Timestamp').size().reset_index(name='Count')
     
     return count_df
-def create_figure_and_save(*args):
-    
+
+def create_figure_and_save(*args: tuple) -> None:
+    """
+    Plotting barplot to compare effect of ion presence for each binding site
+    """
     fig = plt.figure()
     X = np.arange(0, len(args[0]))
     ax = fig.add_axes([0.1, 0.1, 0.8, 0.8])
-    colors = ['b','g','r']
-    labels = ['Ca','Mg','Na']
+    colors = ['b', 'g', 'r']
+    labels = ['Ca', 'Mg', 'Na']
     for i in range(len(args)-3):
         ax.bar(X + 0.25*i, args[i], color=colors[i], width=0.25, label=labels[i])
     ax.set_title(args[3])
     ax.set_xlabel("Site")  # Added x-axis label
     ax.set_ylabel(args[4])
-    plt.legend(loc='upper right')
+    plt.legend(loc = 'upper right')
     path = r"./Files/" + args[5] + r"_vs_site.png"
     plt.savefig(path)
     #plt.show()
 
-def bind_sites():
+def bind_sites() -> np.ndarray:
+    """
+    Creating table that gathers information that shows differences between binding sites.
+    This allows me to create correlation matrix that can explain the impact of binding sites 
+    characteristics to explain binding energy.
+    """
     bind_sites = pd.read_csv('./Files/Biding_sites_summary.csv')
     # dividing amino acids into groups
     new_data = pd.DataFrame(columns=["Dock_site", "Charged+", "Charged-", "Hydrophobic", "Special", "1A+1B",  "2A+2B", "3A+3B",])
@@ -143,21 +157,25 @@ def bind_sites():
     new_data["3A+3B"] = bind_sites["3A"] + bind_sites["3B"]
     return new_data
 
-def create_corr_matrix(data):
+def create_corr_matrix(data: any) -> None:
+    """
+    Correlation matrix calaulation to find how different binding sites and presence of ions influences
+    binding energy
+    """
     corr = data.corr()
     ax = sns.heatmap(
         corr, 
-        vmin=-1, vmax=1, center=0,
-        cmap=sns.diverging_palette(20, 220, n=200),
-        square=True
+        vmin = -1, vmax=1, center=0,
+        cmap = sns.diverging_palette(20, 220, n=200),
+        square = True
     )
     ax.set_xticklabels(
         ax.get_xticklabels(),
-        rotation=45,
-        horizontalalignment='right',
-        fontsize='x-small'  # Adjust font size as needed
+        rotation = 45,
+        horizontalalignment = 'right',
+        fontsize = 'x-small'  # Adjust font size as needed
     );
-    plt.tight_layout()  # Adjust layout to prevent label overlapping
+    #plt.tight_layout()  # Adjust layout to prevent label overlapping
     plt.savefig('./Files/Correlation_matrix.png')
 
 def main():
@@ -174,7 +192,7 @@ def main():
     create_figure_and_save(Ca_Ionic, Mg_Ionic, Na_Ionic, "Ionic interactions", "# of interactions", "Ionic")
     create_figure_and_save(Ca_Bind, Mg_Bind, Na_Bind, "Binding energy", "Energy [kJ/mol]", "BindEnergy")
     
-    # Looking for correlations 
+    # Inserting calculated calumns to calutate correlation matrix
     table = bind_sites()
     table["Bind_Ener_Ca"] = Ca_Bind
     table["Bind_Ener_Mg"] = Mg_Bind
