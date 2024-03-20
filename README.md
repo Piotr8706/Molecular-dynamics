@@ -67,7 +67,7 @@ the presence of divalent ions, such as calcium or magnesium as those can form ca
 3. Install the required dependencies using pip:
 
     ```
-    pip install pandas matplotlib numpy sns re typing
+    pip install -r requirements.txt
     ```
 
 ## Usage
