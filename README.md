@@ -47,13 +47,21 @@ and types of amino acids (https://en.wikipedia.org/wiki/Amino_acid#/media/File:P
 ![Correlation](Files/Correlation_matrix.png)
 
 
-### Binding Energy vs site
+### Binding Energy per site and ion type
 
 ![Correlation](Files/BindEnergy_vs_site.png)
 
-## Binding Energy vs site
+## Number of hydrogen bonds per site and ion type 
 
 ![Correlation](Files/HBond_vs_site.png)
+
+## Number of ionic interactions per site and ion type 
+
+![Correlation](Files/Ionic_vs_site.png)
+
+## Radius of gyration per site and ion type 
+
+![Correlation](Files/Rg_vs_site.png)
 
 ## Conclusions
 
