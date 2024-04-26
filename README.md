@@ -46,6 +46,15 @@ The correlation matrix shows how different factors influence binding between dif
 and types of amino acids (https://en.wikipedia.org/wiki/Amino_acid#/media/File:ProteinogenicAminoAcids.svg) facilitating interactions.
 ![Correlation](Files/Correlation_matrix.png)
 
+
+### Binding Energy vs site
+
+![Correlation](Files/BindEnergy_vs_site.png)
+
+## Binding Energy vs site
+
+![Correlation](Files/HBond_vs_site.png)
+
 ## Conclusions
 
 Hyaluronic acid and human serum albumin can form stable complexes. Although overall the charge of both of
