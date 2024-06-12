@@ -104,10 +104,7 @@ the presence of divalent ions, such as calcium or magnesium as those can form ca
 
 Original paper contributors
 Piotr Bełdowski, Maciej Przybyłek, Przemysław Raczynski, Andra Dedinaite, Krzysztof Górny,
-Florian Wieland, Zbigniew Dendzik, Alina Sionkowska and Per M. Claesson
-Project contributor
-Paweł Kalicki
-Contributions to this project are welcome. If you find any issues or have suggestions for improvements, please feel free to open an issue or submit a pull request.
+Florian Wieland, Zbigniew Dendzik, Alina Sionkowska and Per M. Claesson. Contributions to this project are welcome. If you find any issues or have suggestions for improvements, please feel free to open an issue or submit a pull request.
 
 ## License
 
